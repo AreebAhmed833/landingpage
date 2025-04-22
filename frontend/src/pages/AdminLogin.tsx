@@ -1,43 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 export default function AdminLogin() {
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    email: '',
+    password: '',
   });
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+    setError('');
+    setLoading(true);
 
-    // Check for hardcoded credentials
-    if (formData.username === 'admin@sample.com' && formData.password === 'admin') {
-      // Store admin data
-      localStorage.setItem('adminToken', 'admin-token');
-      localStorage.setItem('adminData', JSON.stringify({ username: formData.username }));
-      
-      // Redirect to admin dashboard
-      navigate('/admin/applications');
-    } else {
-      setError('Invalid credentials');
+    try {
+      const response = await axios.post(`${API_URL}/api/admin/login`, formData);
+      localStorage.setItem('adminToken', response.data.token);
+      localStorage.setItem('admin', JSON.stringify(response.data.admin));
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      console.error('Admin login error:', err);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message === 'Network Error') {
+        setError('Unable to connect to the server. Please check if the server is running.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    setIsLoading(false);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
   return (
@@ -62,21 +68,21 @@ export default function AdminLogin() {
           )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">
-                Username
+              <label htmlFor="email" className="sr-only">
+                Email
               </label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
                   isDarkMode 
                     ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                     : 'border-gray-300 placeholder-gray-500 text-gray-900'
                 } rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Username"
-                value={formData.username}
+                placeholder="Email"
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
@@ -104,14 +110,14 @@ export default function AdminLogin() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                isLoading
+                loading
                   ? 'bg-indigo-400 cursor-not-allowed'
                   : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
               }`}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>

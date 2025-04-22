@@ -1,54 +1,105 @@
-# React + TypeScript + Vite
+# Frontend for Landing Page
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the landing page.
 
-Currently, two official plugins are available:
+## Local Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Install dependencies:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
 ```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+## Deployment to Vercel
+
+### Prerequisites
+
+1. A Vercel account (sign up at [vercel.com](https://vercel.com))
+2. A deployed backend API (e.g., on Render)
+
+### Deployment Steps
+
+1. **Install Vercel CLI**
+
+```bash
+npm install -g vercel
+```
+
+2. **Login to Vercel**
+
+```bash
+vercel login
+```
+
+3. **Deploy to Vercel**
+
+```bash
+vercel
+```
+
+4. **Set Environment Variables**
+
+After deployment, go to your project settings on Vercel and add the following environment variable:
+- `VITE_API_URL`: The URL of your deployed backend API (e.g., `https://your-render-backend-url.onrender.com`)
+
+5. **Redeploy with Environment Variables**
+
+```bash
+vercel --prod
+```
+
+## Deployment to Netlify
+
+### Prerequisites
+
+1. A Netlify account (sign up at [netlify.com](https://netlify.com))
+2. A deployed backend API (e.g., on Render)
+
+### Deployment Steps
+
+1. **Install Netlify CLI**
+
+```bash
+npm install -g netlify-cli
+```
+
+2. **Login to Netlify**
+
+```bash
+netlify login
+```
+
+3. **Initialize Netlify**
+
+```bash
+netlify init
+```
+
+4. **Build and Deploy**
+
+```bash
+npm run build
+netlify deploy --prod
+```
+
+5. **Set Environment Variables**
+
+After deployment, go to your site settings on Netlify and add the following environment variable:
+- `VITE_API_URL`: The URL of your deployed backend API (e.g., `https://your-render-backend-url.onrender.com`)
+
+## Features
+
+- Responsive design
+- Dark mode support
+- User authentication
+- Admin dashboard
+- Job listings and applications
