@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
-import { API_URL } from '../config';
+import { API_BASE_URL } from '../config/api';
 
 export default function AdminLogin() {
   const { isDarkMode } = useTheme();
@@ -28,7 +28,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/admin/login`, formData);
+      const response = await axios.post(`${API_BASE_URL}/admin/login`, formData);
       localStorage.setItem('adminToken', response.data.token);
       localStorage.setItem('admin', JSON.stringify(response.data.admin));
       navigate('/admin/dashboard');

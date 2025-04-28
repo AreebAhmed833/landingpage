@@ -19,6 +19,15 @@ cp .env.example .env
 npm run dev
 ```
 
+## Default Admin Credentials
+
+The application automatically creates a default admin user with the following credentials:
+
+- **Email**: admin@sample.com
+- **Password**: admin
+
+You can use these credentials to log in to the admin dashboard. For security reasons, it's recommended to change the password after your first login.
+
 ## Deployment to Render
 
 ### Prerequisites

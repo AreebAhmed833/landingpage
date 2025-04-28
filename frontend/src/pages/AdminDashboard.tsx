@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 interface Application {
   _id: string;
@@ -8,40 +11,40 @@ interface Application {
   name: string;
   email: string;
   phone: string;
-  coverLetter: string;
-  resumeUrl: string;
-  status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
-  appliedAt: string;
+  linkedin: string;
+  resumePath: string;
+  status: 'Pending' | 'Under Review' | 'Shortlisted' | 'Rejected';
+  createdAt: string;
 }
 
 export default function AdminDashboard() {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      navigate('/admin/login');
+      return;
+    }
     fetchApplications();
-  }, []);
+  }, [navigate]);
 
   const fetchApplications = async () => {
     try {
-      // For testing purposes, use the hardcoded admin token
-      const adminToken = 'admin-token';
-      
-      const response = await fetch('http://localhost:5002/api/jobs/applications', {
+      const adminToken = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/jobs/applications`, {
         headers: {
           'Authorization': `Bearer ${adminToken}`
         }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch applications');
-      }
-      const data = await response.json();
-      setApplications(data);
+      setApplications(response.data);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch applications');
+      setError('Failed to fetch applications');
+      console.error('Error fetching applications:', error);
     } finally {
       setLoading(false);
     }
@@ -49,49 +52,29 @@ export default function AdminDashboard() {
 
   const handleStatusChange = async (applicationId: string, newStatus: Application['status']) => {
     try {
-      // For testing purposes, use the hardcoded admin token
-      const adminToken = 'admin-token';
-      
-      const response = await fetch(`http://localhost:5002/api/jobs/applications/${applicationId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
-
+      const adminToken = localStorage.getItem('adminToken');
+      await axios.put(
+        `${API_URL}/api/jobs/applications/${applicationId}/status`,
+        { status: newStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          }
+        }
+      );
       setApplications(applications.map(app => 
         app._id === applicationId ? { ...app, status: newStatus } : app
       ));
     } catch (error) {
+      console.error('Error updating application status:', error);
       alert('Failed to update application status');
     }
   };
 
-  const downloadResume = (resumeUrl: string, applicantName: string) => {
-    // Convert relative path to absolute URL
-    const baseUrl = 'http://localhost:5002';
-    const fullUrl = `${baseUrl}/${resumeUrl}`;
-    
-    // Create a temporary link element
-    const link = document.createElement('a');
-    link.href = fullUrl;
-    
-    // Extract file extension from URL
-    const extension = resumeUrl.split('.').pop();
-    
-    // Set download attribute with applicant's name
-    link.download = `${applicantName.replace(/\s+/g, '_')}_resume.${extension}`;
-    
-    // Append to body, click, and remove
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin');
+    navigate('/admin/login');
   };
 
   if (loading) {
@@ -117,7 +100,15 @@ export default function AdminDashboard() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Job Applications</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Job Applications</h1>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Logout
+          </button>
+        </div>
         
         <div className="grid gap-6">
           {applications.map((application) => (
@@ -137,8 +128,18 @@ export default function AdminDashboard() {
                     {application.email} | {application.phone}
                   </p>
                   <p className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Applied: {new Date(application.appliedAt).toLocaleDateString()}
+                    Applied: {new Date(application.createdAt).toLocaleDateString()}
                   </p>
+                  <a
+                    href={application.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-2 inline-block text-indigo-600 hover:text-indigo-500 ${
+                      isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : ''
+                    }`}
+                  >
+                    LinkedIn Profile
+                  </a>
                 </div>
                 
                 <div className="flex flex-col space-y-2">
@@ -151,31 +152,22 @@ export default function AdminDashboard() {
                         : 'bg-white border-gray-300 text-gray-900'
                     } py-2 px-3 text-sm`}
                   >
-                    <option value="pending">Pending</option>
-                    <option value="reviewed">Reviewed</option>
-                    <option value="accepted">Accepted</option>
-                    <option value="rejected">Rejected</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Shortlisted">Shortlisted</option>
+                    <option value="Rejected">Rejected</option>
                   </select>
                   
-                  <button
-                    onClick={() => downloadResume(application.resumeUrl, application.name)}
+                  <a
+                    href={`${API_URL}/${application.resumePath}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    Download Resume
-                  </button>
+                    View Resume
+                  </a>
                 </div>
               </div>
-              
-              {application.coverLetter && (
-                <div className="mt-4">
-                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    Cover Letter
-                  </h3>
-                  <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {application.coverLetter}
-                  </p>
-                </div>
-              )}
             </div>
           ))}
         </div>

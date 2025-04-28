@@ -12,7 +12,7 @@ createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <App />
+    <App />
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -6,24 +6,31 @@ const Admin = require('../models/Admin');
 // Admin login
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
+    console.log('Login attempt with:', { email, password });
 
-    // Find admin by username
-    const admin = await Admin.findOne({ username });
+    // Find admin by email
+    const admin = await Admin.findOne({ email });
     if (!admin) {
+      console.log('No admin found with email:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    console.log('Found admin:', { email: admin.email, hashedPassword: admin.password });
 
     // Check password
+    console.log('Attempting to compare passwords...');
     const isMatch = await admin.comparePassword(password);
+    console.log('Password comparison result:', isMatch);
+
     if (!isMatch) {
+      console.log('Password does not match');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Create token
     const token = jwt.sign(
       { id: admin._id, role: 'admin' },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '1d' }
     );
 
@@ -36,6 +43,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Admin login error:', error);
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 });

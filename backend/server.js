@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +12,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const { router: adminRoutes, verifyAdminToken } = require('./routes/admin');
 const jobsRoutes = require('./routes/jobs');
+const Admin = require('./models/Admin');
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads/resumes');
@@ -45,11 +47,29 @@ const mongooseOptions = {
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB successfully');
     console.log('Database:', mongoose.connection.name);
     console.log('Host:', mongoose.connection.host);
     console.log('Port:', mongoose.connection.port);
+    
+    // Create default admin if none exists
+    try {
+      const adminExists = await Admin.findOne({ email: 'admin@sample.com' });
+      if (!adminExists) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('admin', salt);
+        const defaultAdmin = new Admin({
+          username: 'admin',
+          email: 'admin@sample.com',
+          password: hashedPassword
+        });
+        await defaultAdmin.save();
+        console.log('Default admin user created');
+      }
+    } catch (error) {
+      console.error('Error creating default admin:', error);
+    }
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);

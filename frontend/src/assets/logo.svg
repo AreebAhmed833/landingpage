@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="500" viewBox="0 0 500 500" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g fill="currentColor">
+        <!-- N logo mark -->
+        <path d="M150 150 L150 350 L200 350 L300 200 L300 350 L350 350 L350 150 L300 150 L200 300 L200 150 Z"/>
+        <!-- V accent -->
+        <path d="M225 250 L250 300 L275 250 L250 200 Z"/>
+    </g>
+    <!-- Text below if needed -->
+    <text x="250" y="450" text-anchor="middle" font-family="sans-serif" font-size="48" fill="currentColor">
+        NEOVANNCE
+    </text>
+</svg> 

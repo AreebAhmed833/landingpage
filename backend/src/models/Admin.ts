@@ -1,5 +1,13 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose, { Document } from 'mongoose';
+import bcrypt from 'bcrypt';
+
+interface IAdmin extends Document {
+  username: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
 const adminSchema = new mongoose.Schema({
   username: {
@@ -39,8 +47,8 @@ adminSchema.pre('save', async function(next) {
 });
 
 // Method to compare passwords
-adminSchema.methods.comparePassword = async function(candidatePassword: string) {
+adminSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export const Admin = mongoose.model('Admin', adminSchema); 
+export const Admin = mongoose.model<IAdmin>('Admin', adminSchema); 

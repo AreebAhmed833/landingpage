@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
+import neovannceLogo from '../neovannce.png';
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -10,15 +11,18 @@ export default function Logo({ size = 'medium', className = '' }: LogoProps) {
   const { isDarkMode } = useTheme();
   
   const sizeClasses = {
-    small: 'text-2xl',
-    medium: 'text-3xl',
-    large: 'text-4xl'
+    small: 'h-10 w-auto',
+    medium: 'h-16 w-auto',
+    large: 'h-20 w-auto'
   };
 
   return (
-    <div className={`font-serif ${sizeClasses[size]} ${className}`}>
-      <span className="font-bold bg-gradient-to-r from-emerald-400 to-blue-500 text-transparent bg-clip-text">NEO</span>
-      <span className={`font-light ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>VANNCE</span>
+    <div className={`flex items-center ${className}`}>
+      <img 
+        src={neovannceLogo} 
+        alt="Neovannce Logo" 
+        className={`${sizeClasses[size]} brightness-100`}
+      />
     </div>
   );
 } 
